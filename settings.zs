@@ -14,4 +14,4 @@ global logging as boolean = true;
 
 //Remove all default Crafting Recipes? [Default: false]
 
-global rmAll as boolean = false
+global rmAll as boolean = false;
