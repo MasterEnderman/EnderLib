@@ -8,13 +8,15 @@ import crafttweaker.liquid.ILiquidStack;
 import crafttweaker.oredict.IOreDict;
 import crafttweaker.oredict.IOreDictEntry;
 
+import scripts.EnderLib.functions.misc.toString;
+
 function elAddShaped(recipeMap as IIngredient[][][][amount as int][output as IItemStack]) {
 	var index_0 as int = 0;
 	var index_1 as int = 0;
 	for output, data1 in recipeMap {
 		index_0 = 0;
 		index_1 = 0;
-		var outputName as string = output.commandString.replace("<","").replace(">","");
+		var outputName as string = toString(output);
 		recipes.removeShaped(output);
 		if logging {
 			print("Removing all shaped recipes for "~outputName);
@@ -39,7 +41,7 @@ function elAddShapeless(recipeMap as IIngredient[][][amount as int][output as II
 	for output, data1 in recipeMap {
 		index_0 = 0;
 		index_1 = 0;
-		var outputName as string = output.commandString.replace("<","").replace(">","");
+		var outputName as string = toString(output);
 		recipes.removeShapeless(output);
 		if logging {
 			print("Removing all shapeless recipes for "~outputName);
