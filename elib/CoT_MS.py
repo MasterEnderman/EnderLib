@@ -1,40 +1,42 @@
 import os
+import shutil
 
-"""
-This is the second Version of my CoT_MS script to easier manage
-the Material System offered in ContentTweaker. ~ written by _MasterEnderman_
-"""
+from elib import *
+from elib.strings import *
+from elib.utils import *
 
-# OPTIONS
+class msOptions(enderlib):
 
-runningLinux = True;
-logging = False;
-defaultPath = r"/.minecraft/scripts/ContentTweaker/MaterialSystem/"
-fileDefinition = "MS_Definition.zs"
-fileRegistration = "MS_Registration.zs"
+    logging = False;
+    removeCoTFiles = False;
+    defaultPath = r"/.minecraft/scripts/ContentTweaker/MaterialSystem/"
+    fileDefinition = "MS_Definition.zs"
+    fileRegistration = "MS_Registration.zs"
 
-MATERIALLIST = [ #Custom Materials you want to add have to be specified here
-    #Type // Material name // Localized Name // Color (hex) // Crafting(Ingot,Plate),Processing(Dust,Ore),Fluid
-    ["metal","aluminum", "Aluminum", "#f76e45", True, True, True],
-    ["metal","iron", "Iron", "#808080", True, True, True],
-    ["metal","nickel", "Nickel", "#c69da2", True, True, True],
-    ["metal","copper", "Copper", "#ff9a1e", True, True, True],
-    ["metal","silver", "Silver", "#e2d9ce", True, True, True],
-    ["metal","tin", "Tin", "#84a1ce", True, True, True],
-    ["metal","iridium", "Iridium", "#d7f2ee", True, True, True],
-    ["metal","platinum", "Platinum", "#72cae5", True, True, True],
-    ["metal","gold", "Gold", "#ffff00", True, True, True],
-    ["metal","lead", "Lead", "#ba87c1", True, True, True],
-    ["metal","uranium", "Uranium", "#5db213", True, True, True],
-    #Alloy
-    ["metal","bronze", "Bronze", "#ECC458", True, False, True],
-    ["metal","constantan", "Constantan", "#CD8E7F", True, False, True],
-    ["metal","electrum", "Electrum", "#FFEB90", True, False, True],
-    ["metal","invar", "Invar", "#BDB7B1", True, False, True],
-    ["metal","steel", "Steel", "#9AA3A3", True, False, True],
-]
+    PARTLIST = []
 
-class msParts():
+    MATERIALLIST = [ #Custom Materials you want to add have to be specified here
+        #Type // Material name // Localized Name // Color (hex) // Crafting(Ingot,Plate),Processing(Dust,Ore),Fluid
+        ["metal","aluminum", "Aluminum", "#f76e45", True, True, True],
+        ["metal","iron", "Iron", "#808080", True, True, True],
+        ["metal","nickel", "Nickel", "#c69da2", True, True, True],
+        ["metal","copper", "Copper", "#ff9a1e", True, True, True],
+        ["metal","silver", "Silver", "#e2d9ce", True, True, True],
+        ["metal","tin", "Tin", "#84a1ce", True, True, True],
+        ["metal","iridium", "Iridium", "#d7f2ee", True, True, True],
+        ["metal","platinum", "Platinum", "#72cae5", True, True, True],
+        ["metal","gold", "Gold", "#ffff00", True, True, True],
+        ["metal","lead", "Lead", "#ba87c1", True, True, True],
+        ["metal","uranium", "Uranium", "#5db213", True, True, True],
+        #Alloy
+        ["metal","bronze", "Bronze", "#ECC458", True, False, True],
+        ["metal","constantan", "Constantan", "#CD8E7F", True, False, True],
+        ["metal","electrum", "Electrum", "#FFEB90", True, False, True],
+        ["metal","invar", "Invar", "#BDB7B1", True, False, True],
+        ["metal","steel", "Steel", "#9AA3A3", True, False, True],
+    ]
+
+class msParts(enderlib):
 
     partsCrafting = [
         ["block","block"],
@@ -106,7 +108,7 @@ class msParts():
     def getAllGemCustom(self):
         return self.partsGemCustom
 
-class msMaterials():
+class msMaterials(enderlib):
 
     materials = []
 
@@ -127,26 +129,6 @@ class msMaterials():
     def getAllMaterials(self):
         return self.materials
 
-def convertString(check,path):
-    """convert path between WINDOWS and LINUX"""
-    if not check:
-        return path.replace("/","\\")
-    else:
-        return path.replace("\\","/")
-
-def completePath(check,path):
-    """returns the correct path to the generated files"""
-    return os.getcwd() + convertString(check,path)
-
-def checkDirectory(check,path):
-    """check if the required directories exist and creates them if needed"""
-    newPath = completePath(check,path)
-    if not os.path.exists(newPath):
-        print("Did not found required directories. Creating them...")
-        os.makedirs(newPath)
-    else:
-        print("Found the required directories!")
-
 def registerParts(file,array):
     """used to iterate through a list to register custom parts"""
     for i in range(len(array)):
@@ -155,7 +137,7 @@ def registerParts(file,array):
             array[i][0] + '").setPartType(mods.contenttweaker.MaterialSystem.getPartType("item")).setOreDictName("' +
             array[i][1] + '").build();\n'
         )
-        if logging:
+        if (msOptions.logging):
             print("Part: {}\noreDict: {}\n".format(array[i][0],array[i][1]))
 
 def getPartsArray(material):
@@ -172,6 +154,12 @@ def getPartsArray(material):
         for entry in msParts.getAllGem(msParts):
             array.append(entry[0])
     return array
+
+def removeCoT():
+    """Removes the files generated ContentTweaker"""
+    shutil.rmtree(completePath("/.minecraft/config/acronym/saved/"))
+    if (msOptions.logging):
+        print("Removed CoT Files")
 
 MS_Definition = """#priority 100000
 #loader contenttweaker
@@ -206,23 +194,29 @@ funtions = """function addDefaultMoltenData(moltenData as MaterialPartData) {
 }
 
 function addDefaultOreData(oreData as MaterialPartData) {
-	oreData.addDataValue("variants", ["minecraft:stone"]);
-	oreData.addDataValue("hardness", ["5"]);
-	oreData.addDataValue("resistance", ["15"]);
-	oreData.addDataValue("harvestTool", ["pickaxe"]);
-	oreData.addDataValue("harvestLevel", ["1"]);
+	oreData.addDataValue("variants", "minecraft:stone");
+	oreData.addDataValue("hardness", "5");
+	oreData.addDataValue("resistance", "15");
+	oreData.addDataValue("harvestTool", "pickaxe");
+	oreData.addDataValue("harvestLevel", "1");
 }
 """
 
 space = "    "
 
-if __name__ == "__main__":
-    
-    #curved_plate = msParts("curved_plate","curvedPlate","CRAFTING")
+def runCoTMS():
+    """Triggers the CoT_MS Generator"""
 
-    checkDirectory(runningLinux,defaultPath)
+    if (msOptions.removeCoTFiles):
+        removeCoT()
 
-    with open(completePath(runningLinux,defaultPath)+fileDefinition, "w+", encoding="UTF-8") as f:
+    checkDirectory(msOptions.defaultPath,msOptions.logging)
+
+    if len(msOptions.PARTLIST) > 0:
+        for part in msOptions.PARTLIST:
+            msParts(part[0],part[1],part[2])
+
+    with open(completePath(msOptions.defaultPath+msOptions.fileDefinition), "w+", encoding="UTF-8") as f:
         f.truncate(0)
         f.write(
             MS_Definition
@@ -230,13 +224,13 @@ if __name__ == "__main__":
         registerParts(f,msParts.getAllCraftingCustom(msParts))
         registerParts(f,msParts.getAllProcessingCustom(msParts))
         registerParts(f,msParts.getAllGemCustom(msParts))
-        if len(MATERIALLIST) > 0:
+        if len(msOptions.MATERIALLIST) > 0:
             f.write(
                 "\nstatic materials as Material[string] = {\n"
             )
-            for entry in MATERIALLIST:
+            for entry in msOptions.MATERIALLIST:
                 material = msMaterials(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5],entry[6])
-                if material.name == MATERIALLIST[-1][1]:
+                if material.name == msOptions.MATERIALLIST[-1][1]:
                     f.write(
                         space+'"'+material.name+'": MaterialSystem.getMaterialBuilder().setName("'+
                         material.localize+'").setColor('+str(int(material.color.replace(r"#",""),16))+
@@ -248,7 +242,7 @@ if __name__ == "__main__":
                         material.localize+'").setColor('+str(int(material.color.replace(r"#",""),16))+
                         ').build(),\n'
                     )
-                if logging:
+                if (msOptions.logging):
                     print(material.info())
             f.write(
                 "};\n"
@@ -257,10 +251,10 @@ if __name__ == "__main__":
             "\n"+funtions
         )
 
-    with open(completePath(runningLinux,defaultPath)+fileRegistration, "w+", encoding="UTF-8") as f:
+    with open(completePath(msOptions.defaultPath+msOptions.fileRegistration), "w+", encoding="UTF-8") as f:
         f.truncate(0)
         f.write(MS_Registration)
-        for entry in MATERIALLIST:
+        for entry in msOptions.MATERIALLIST:
             material = msMaterials(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5],entry[6])
             f.write(
                 "\n//"+material.name+"\n\n"
